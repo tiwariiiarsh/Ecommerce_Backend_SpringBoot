@@ -75,7 +75,7 @@ public class AuthController {
                 .collect(Collectors.toList());
 
         UserInfofResponse response = new UserInfofResponse(userDetails.getId(),
-                userDetails.getUsername(), roles, jwtCookie.toString());
+                userDetails.getUsername(), roles,userDetails.getEmail(), jwtCookie.toString());
 
 //        incase of token formate
 //        return ResponseEntity.ok(response);

@@ -20,6 +20,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+
+import org.springframework.data.jpa.domain.Specification;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -55,6 +58,9 @@ public class ProductServiceImpl implements ProductService{
     @Value("${product.image}")
     private String path;
 
+    @Value("${image.base.url}")
+    private String imageBaseUrl;
+
     @Override
     public ProductDTO addProduct(Long categoryId, ProductDTO productDTO) {
 //        check if the product is already present or not!!
@@ -85,20 +91,42 @@ public class ProductServiceImpl implements ProductService{
         }
     }
 
+    private String constructImageUrl(String imageName) {
+        return imageBaseUrl.endsWith("/") ? imageBaseUrl + imageName : imageBaseUrl + "/" + imageName;
+    }
+
     @Override
-    public ProductResponse getAllProducts(Integer pageNumber,Integer pageSize,String sortBy,String sortOrder) {
+    public ProductResponse getAllProducts(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder, String keyword, String category) {
         Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc")  //    Ignore case matlab ASC, asc, Asc sabko same treat karega.
                 ?Sort.by(sortBy).ascending()
                 :Sort.by(sortBy).descending();
 // 1.Ye ek Pageable object banata hai jo Spring Data JPA ko batata hai ki kaunsa page aur kitne records chahiye.
         Pageable pageDetails = PageRequest.of(pageNumber,pageSize,sortByAndOrder);
 //    Page<T> = Data + Metadata (pagination info)
-        Page<Product> PageProducts = productRepository.findAll(pageDetails);
-        List<Product> products =PageProducts.getContent();
+
+//       Dynamic filtering using Specification
+        Specification<Product> spec = Specification.where(null);
+        if (keyword != null && !keyword.isEmpty()) {
+            spec = spec.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.like(criteriaBuilder.lower(root.get("productName")), "%" + keyword.toLowerCase() + "%"));
+        }
+
+        if (category != null && !category.isEmpty()) {
+            spec = spec.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.like(root.get("category").get("categoryName"), category));
+        }
+
+        Page<Product> pageProducts = productRepository.findAll(spec, pageDetails);
+        List<Product> products =pageProducts.getContent();
 
         List<ProductDTO> productDTOS = products.stream()
-                .map(product -> modelMapper.map(product,ProductDTO.class))
+                .map(product -> {
+                    ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
+                    productDTO.setImage(constructImageUrl(product.getImage()));
+                    return productDTO;
+                })
                 .toList();
+
 
 //        check is product is zero 0
 //        if(products.isEmpty()){
@@ -214,6 +242,8 @@ public class ProductServiceImpl implements ProductService{
         productRepository.delete(deleteProduct);
         return modelMapper.map(deleteProduct,ProductDTO.class);
     }
+
+
 
     @Override
     public ProductDTO updateProductImage(Long productId, MultipartFile image) throws IOException {

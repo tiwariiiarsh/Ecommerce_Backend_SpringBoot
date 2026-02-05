@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -51,6 +52,8 @@ public class WebSecurityConfig {
         // UserDetailsService: user fetch karega DB se
         authenticationProvider.setUserDetailsService(userDetailsService);
 
+
+//        spring security internally checks passwordEncoder.matches(rawPasswordFromUser,encodedPasswordFromDB);
         // PasswordEncoder: password match karega (BCrypt, NoOp, etc.)
         authenticationProvider.setPasswordEncoder(passwordEncoder());
 
@@ -58,36 +61,36 @@ public class WebSecurityConfig {
     }
 
     //provide us our own SecurityFilterChain and uses own security method ,don't use default security method
+//    authenticationJwtTokenFilter()--it will run during validation of jwt
+//    UsernamePasswordAuthenticationFilter.class---- this iwll run after validation if valid token found cant runn this class otherwise it will check for login the user and then give jwt
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
+                .cors(cors -> {}) // CORS ko enable kar diya
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizeHandler))
-                .sessionManagement(
-                        session ->
-                                session.sessionCreationPolicy(
-                                        SessionCreationPolicy.STATELESS)
-                )
-                .headers(headers -> headers
-                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin
-                        )
-                )
-                .addFilterBefore(authenticationJwtTokenFilter(),
-                        UsernamePasswordAuthenticationFilter.class)
-                .authorizeHttpRequests(auth->
-                    auth.requestMatchers("/api/auth/**").permitAll()
-// requestMatchers(body parameter url) iss liye use hua h ki agr ye body parameter url  normal searching url se match krta h toh ham security authentication nhi lgaenge
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
+                .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class)
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/order/**").permitAll()
+                        .requestMatchers("/api/public/**").permitAll()   // 👈 yaha allow kar diya
                         .requestMatchers("/v3/api-docs/**").permitAll()
-                        .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()
-//                        .requestMatchers("/api/public/**").permitAll()
-//                        .requestMatchers("/api/admin/**").permitAll()
-                        .requestMatchers("/api/test/**").permitAll()
+                        .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/images/**").permitAll()
-                        .anyRequest().authenticated());
+                        .requestMatchers("/api/test/**").permitAll()
+                        .anyRequest().authenticated()
+                );
+
+//        it will check during login wuth username and password with the help of DaoAuthenticationProvider
         http.authenticationProvider(authenticationProvider());
+        return http.build();
+    }
 
 
-        //http.httpBasic(withDefaults());
+    //http.httpBasic(withDefaults());
 
 //        spring security by default header bhejta h,jisme tumhari website kisi bhi iframe me open nhihogi
 //        but H2 console by default iframe me hi open hota h,so we need to assign the sameorigin fameoption given below
@@ -102,8 +105,7 @@ public class WebSecurityConfig {
 //        http.build() ka kaam hai:
 //👉 In saare configurations ko final form me convert karke ek SecurityFilterChain object banana.
 //        Aur ye SecurityFilterChain hi woh cheez hai jisko Spring Security use karta hai har request ko check karne ke liye.
-        return http.build();
-    }
+
 //Ye kuch endpoints ko completely ignore karta hai (Swagger docs etc.). from authenti...
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer(){

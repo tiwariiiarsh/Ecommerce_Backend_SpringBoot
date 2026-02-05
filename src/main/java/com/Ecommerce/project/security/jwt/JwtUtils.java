@@ -34,7 +34,7 @@ public class JwtUtils {
     //   "HttpServletRequest ek interface hai jo client ke HTTP request ko represent karta hai. Iske through hum request
 //   headers, parameters, method (GET/POST), body, cookies aur client-related information access kar sakte hain. Ye basically client aur server ke beech bridge ka kaam karta hai."
 
-//    --------------------JWT TOKEN  FORMATE---------------------------------
+//    -------------------- GET JWT TOKEN FROM HEADER  FORMATE---------------------------------
 //    in jwt token time --> jwt token will be passed to us in the form of header
 //    public String getJwtFromHeader(HttpServletRequest request) {
 //        String bearerToken = request.getHeader("Authorization");
@@ -44,8 +44,10 @@ public class JwtUtils {
 //        }
 //        return null;
 //    }
-
+//----------------------------<<<<  getJWT  >>>>>>>>>>-------------------------------
 //    ---------------------JWT COOKIE FORMATE----------------------------------
+//    cookie is just used for storage purpose: it store the jwt in the cooki
+//    other than cookie we have two more storage formate:  1))Browser Web App → ✅ Cookie-based JWT,  2)) React / Mobile App → ✅ Header + LocalStorage , 3) Microservices → ❌ Session
 //Browser se cookie read karke JWT return karta hai. Filter/Interceptor me call hota hai.
     public String getJwtFromCookies(HttpServletRequest request){
         Cookie cookie = WebUtils.getCookie(request,jwtCookie);  //WebUtils.getCookie--> Spring ka helper function hai jo request me specific cookie name search karta hai.
@@ -71,6 +73,7 @@ public class JwtUtils {
                 .path("/api")
                 .maxAge(24*60*60)
                 .httpOnly(false)
+                .secure(false)
                 .build();
         return  cookie;
     }

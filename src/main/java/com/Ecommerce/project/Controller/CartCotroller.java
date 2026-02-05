@@ -2,7 +2,9 @@ package com.Ecommerce.project.Controller;
 
 import com.Ecommerce.project.Utils.AuthUtils;
 import com.Ecommerce.project.model.Cart;
+import com.Ecommerce.project.model.CartItem;
 import com.Ecommerce.project.payload.CartDTO;
+import com.Ecommerce.project.payload.CartItemDTO;
 import com.Ecommerce.project.repositories.CartRepository;
 import com.Ecommerce.project.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +25,16 @@ public class CartCotroller {
     AuthUtils authUtils;
 
 
-
     @Autowired
     private CartService cartService;
+
+
+    @PostMapping("/carts/create")
+    public ResponseEntity<String> createOrUpdateCart(@RequestBody  List<CartItemDTO> cartItems){
+      String response = cartService.createOrUpdateCartWithItems(cartItems);
+        return new ResponseEntity<String>(response, HttpStatus.CREATED);
+    }
+
 
     @PostMapping("/carts/products/{productId}/quantity/{quantity}")
     public ResponseEntity<CartDTO> addProductToCart( @PathVariable Long productId,
@@ -39,7 +48,7 @@ public class CartCotroller {
         List<CartDTO> cartDTOS = cartService.getAllCarts();
         return new ResponseEntity<List<CartDTO>>(cartDTOS,HttpStatus.FOUND);
     }
-    @GetMapping("/carts/user/cart")
+    @GetMapping("/carts/users/cart")
     public ResponseEntity<CartDTO>getCardById(){
         String emailId = authUtils.loggedInEmail();
         Cart cart =cartRepository.findCartByEmail(emailId);

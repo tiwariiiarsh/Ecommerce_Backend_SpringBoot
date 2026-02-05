@@ -6,13 +6,15 @@ public class UserInfofResponse {
     private Long id;
     private String jwtToken;
     private String username;
+    private String email;
     private List<String> roles;
 
-    public UserInfofResponse(Long id, String username, List<String> roles, String jwtToken) {
+    public UserInfofResponse(Long id, String username, List<String> roles,String email, String jwtToken) {
         this.id = id;
         this.username = username;
         this.roles = roles;
         this.jwtToken = jwtToken;
+        this.email=email;
     }
 
     public UserInfofResponse(Long id, String username, List<String> roles) {
@@ -47,6 +49,14 @@ public class UserInfofResponse {
 
     public List<String> getRoles() {
         return roles;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public void setRoles(List<String> roles) {

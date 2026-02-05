@@ -8,7 +8,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
+//- **`DaoAuthenticationProvider works by using a UserDetailsService to load user details, typically from a database or any other data source, to verify the credentials.
+//- UserDetailsService loads the user’s information and returns a UserDetails object, which includes the username, password, and authorities (roles or permissions).
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 

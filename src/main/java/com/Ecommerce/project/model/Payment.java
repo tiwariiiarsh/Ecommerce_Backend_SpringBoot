@@ -18,6 +18,10 @@ public class Payment {
     @OneToOne(mappedBy = "payment",cascade = {CascadeType.MERGE,CascadeType.PERSIST})
     private Order order;
 
+//    @OneToOne(mappedBy = "payment")
+//    private Order order;
+
+
     @NonNull
     @Size(min = 4,message = "payment method  must contains at least 4 characters")
     private String paymentMethod;

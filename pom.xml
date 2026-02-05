@@ -118,6 +118,12 @@ for  More details refer::: lombok DOC-->
 		<scope>test</scope>
 	</dependency>
 
+<!--for payment gateway ,from stripe -->
+		<dependency>
+			<groupId>com.stripe</groupId>
+			<artifactId>stripe-java</artifactId>
+			<version>30.0.0</version>
+		</dependency>
 
 	</dependencies>
 

@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class CartItem {
 
 //    Example:
-//            👤 User: Arsh
+//      👤 User: Arsh
 //🛒 Cart: Arsh ka Cart
 //    CartItem #1 → Product = iPhone 15, Quantity = 1
 //    CartItem #2 → Product = Shoes, Quantity = 3
@@ -42,7 +42,9 @@ public class CartItem {
 
     private Integer quantity;
     private Double discount;
+    @Column(nullable = false)
     private Double productPrice;
+
 
 
 }

@@ -20,7 +20,8 @@ public class Role {
     @ToString.Exclude
     @Enumerated(EnumType.STRING)
     @Column(length = 20,name = "role_name")
-    private AppRole roleName; //bydefault enum type persistet in database as a integer so make it string by  @Enumerated(EnumType.STRING)
+    private AppRole roleName;
+    //by default enum type persist in database as an integer so make it string by  @Enumerated(EnumType.STRING)
 
     public Role(AppRole roleName) {
         this.roleName = roleName;

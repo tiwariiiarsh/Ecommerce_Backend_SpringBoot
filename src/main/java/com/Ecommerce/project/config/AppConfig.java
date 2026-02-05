@@ -3,7 +3,7 @@ package com.Ecommerce.project.config;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-//This method of creating a object is custom Method and
+//This method of creating an object is custom Method and
 // we will use this method only when external library are used
 //@Configuration → Class jisme beans banate ho.
 //@Bean → Method jo bean return karta hai.
@@ -24,7 +24,8 @@ public class AppConfig {
 //----------------NOTES----------------------------
 //
 //🔹 Why we use ModelMapper?
-//Jab hum Spring Boot me DTO (Data Transfer Object) aur Entity classes banate hain, unke fields mostly same hote hain. Lekin unhe manually map karna time-consuming aur boring kaam hota hai.
+//Jab hum Spring Boot me DTO (Data Transfer Object) aur Entity classes banate hain,
+// unke fields mostly same hote hain. Lekin unhe manually map karna time-consuming aur boring kaam hota hai.
 //Example without ModelMapper 👇
 //UserDTO dto = new UserDTO();
 //dto.setId(user.getId());

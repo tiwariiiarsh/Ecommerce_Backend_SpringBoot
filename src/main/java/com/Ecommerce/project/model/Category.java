@@ -22,6 +22,8 @@ public class Category {
 //    @GeneratedValue bolta hai → “Id khud se generate karna, developer ko manually value nahi deni.”
 //    4 different cases in it :IDENTITY,AUTO,SEQUENCE,TABLE
 //    IN CASE OF IDENTITY:it will automatically increment the id value
+//   IN CASE OF AUTO:  Hibernate chooses the strategy automatically
+//    
       @Id
       @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long categoryId;
