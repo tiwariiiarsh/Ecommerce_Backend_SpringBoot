@@ -1,5 +1,6 @@
 package com.Ecommerce.project.model;
 
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -12,12 +13,13 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @Table(name = "users",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = "username"),   //Prevents duplicate data username
-                @UniqueConstraint(columnNames = "email")  //Prevents duplicate data email
+                @UniqueConstraint(columnNames = "username"),
+                @UniqueConstraint(columnNames = "email")
         })
 public class User {
     @Id
@@ -58,10 +60,10 @@ public class User {
 
     @Getter
     @Setter
-    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE},orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
 //    @JoinTable(name = "user_address",
-//            joinColumns = @JoinColumn(name = "user_id"),
-//            inverseJoinColumns = @JoinColumn(name = "address_id"))
+//                joinColumns = @JoinColumn(name = "user_id"),
+//                inverseJoinColumns = @JoinColumn(name = "address_id"))
     private List<Address> addresses = new ArrayList<>();
 
     @ToString.Exclude

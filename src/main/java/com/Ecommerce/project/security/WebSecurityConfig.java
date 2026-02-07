@@ -75,7 +75,9 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/order/**").permitAll()
-                        .requestMatchers("/api/public/**").permitAll()   // 👈 yaha allow kar diya
+                        .requestMatchers("/api/public/**").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/seller/**").hasAnyRole("ADMIN","SELLER")
                         .requestMatchers("/v3/api-docs/**").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()

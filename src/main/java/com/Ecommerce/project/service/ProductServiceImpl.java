@@ -1,11 +1,13 @@
 package com.Ecommerce.project.service;
 
+import com.Ecommerce.project.Utils.AuthUtils;
 import com.Ecommerce.project.exceptions.ApiException;
 import com.Ecommerce.project.exceptions.ResourceNotFoundException;
 import com.Ecommerce.project.model.Cart;
 import com.Ecommerce.project.model.Category;
 import com.Ecommerce.project.model.Product;
 
+import com.Ecommerce.project.model.User;
 import com.Ecommerce.project.payload.CartDTO;
 import com.Ecommerce.project.payload.ProductDTO;
 import com.Ecommerce.project.payload.ProductResponse;
@@ -55,6 +57,9 @@ public class ProductServiceImpl implements ProductService{
     @Autowired
     private FileService fileService;
 
+    @Autowired
+    private AuthUtils authUtils;
+
     @Value("${product.image}")
     private String path;
 
@@ -81,6 +86,7 @@ public class ProductServiceImpl implements ProductService{
             Product product = modelMapper.map(productDTO, Product.class);
             product.setImage("default.png");
             product.setCategory(category);
+            product.setUser(authUtils.loggedInUser());
             double specialPrice = product.getPrice() - ((product.getDiscount() * 0.01) * product.getPrice());
             product.setSpecialPrice(specialPrice);
             Product savedProduct = productRepository.save(product);
@@ -143,6 +149,82 @@ public class ProductServiceImpl implements ProductService{
     }
 
     @Override
+    public ProductResponse getAllProductsForAdmin(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+        Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc")  //    Ignore case matlab ASC, asc, Asc sabko same treat karega.
+                ?Sort.by(sortBy).ascending()
+                :Sort.by(sortBy).descending();
+// 1.Ye ek Pageable object banata hai jo Spring Data JPA ko batata hai ki kaunsa page aur kitne records chahiye.
+        Pageable pageDetails = PageRequest.of(pageNumber,pageSize,sortByAndOrder);
+//    Page<T> = Data + Metadata (pagination info)
+
+
+
+        Page<Product> pageProducts = productRepository.findAll( pageDetails);
+        List<Product> products =pageProducts.getContent();
+
+        List<ProductDTO> productDTOS = products.stream()
+                .map(product -> {
+                    ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
+                    productDTO.setImage(constructImageUrl(product.getImage()));
+                    return productDTO;
+                })
+                .toList();
+
+
+//        check is product is zero 0
+//        if(products.isEmpty()){
+//            throw new ApiException("product is not present!!");
+//        }
+        ProductResponse productResponse = new ProductResponse();
+        productResponse.setContent(productDTOS);
+        productResponse.setPageNumber(productResponse.getPageNumber());
+        productResponse.setLastPage(productResponse.isLastPage());
+        productResponse.setTotalPages(productResponse.getTotalPages());
+        productResponse.setTotalElements(productResponse.getTotalElements());
+        productResponse.setPageSize(productResponse.getPageSize());
+        return productResponse;
+    }
+
+    @Override
+    public ProductResponse getAllProductsForSeller(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+        Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc")  //    Ignore case matlab ASC, asc, Asc sabko same treat karega.
+                ?Sort.by(sortBy).ascending()
+                :Sort.by(sortBy).descending();
+// 1.Ye ek Pageable object banata hai jo Spring Data JPA ko batata hai ki kaunsa page aur kitne records chahiye.
+        Pageable pageDetails = PageRequest.of(pageNumber,pageSize,sortByAndOrder);
+//    Page<T> = Data + Metadata (pagination info)
+
+        User user = authUtils.loggedInUser();
+        Page<Product> pageProducts = productRepository.findByUser( user,pageDetails);
+        List<Product> products =pageProducts.getContent();
+
+        List<ProductDTO> productDTOS = products.stream()
+                .map(product -> {
+                    ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
+                    productDTO.setImage(constructImageUrl(product.getImage()));
+                    return productDTO;
+                })
+                .toList();
+
+
+//        check is product is zero 0
+//        if(products.isEmpty()){
+//            throw new ApiException("product is not present!!");
+//        }
+        ProductResponse productResponse = new ProductResponse();
+        productResponse.setContent(productDTOS);
+        productResponse.setPageNumber(productResponse.getPageNumber());
+        productResponse.setLastPage(productResponse.isLastPage());
+        productResponse.setTotalPages(productResponse.getTotalPages());
+        productResponse.setTotalElements(productResponse.getTotalElements());
+        productResponse.setPageSize(productResponse.getPageSize());
+        return productResponse;
+    }
+
+
+
+
+    @Override
     public ProductResponse searchByCategory(Long categoryId, Integer pageNumber,Integer pageSize,String sortBy,String sortOrder) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Categorey","categroyId",categoryId));
@@ -175,6 +257,7 @@ public class ProductServiceImpl implements ProductService{
 //    SQL LIKE pattern ka funda
 //Agar tu LIKE 'Lap%' use karega → "Laptop", "LapDesk" milenge.
 //Agar tu LIKE '%Lap%' use karega → "Laptop", "MyLaptop", "BigLapDesk" sab milenge.
+
 
 
 
