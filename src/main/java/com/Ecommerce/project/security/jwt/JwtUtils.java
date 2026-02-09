@@ -72,8 +72,11 @@ public class JwtUtils {
         ResponseCookie cookie = ResponseCookie.from(jwtCookie,jwt) //builder func h
                 .path("/api")
                 .maxAge(24*60*60)
-                .httpOnly(false)
-                .secure(false)
+//                .httpOnly(false)
+//                .secure(false)
+                .httpOnly(true)                // SECURITY
+                .secure(true)                  // 🔥 MUST for HTTPS
+                .sameSite("None")              // 🔥 MUST for deployed env
                 .build();
         return  cookie;
     }
