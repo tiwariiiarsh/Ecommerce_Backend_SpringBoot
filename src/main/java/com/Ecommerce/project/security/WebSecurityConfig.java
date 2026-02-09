@@ -87,6 +87,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/test/**").permitAll()
                         .anyRequest().authenticated()
                 );
+        System.out.println("🔥🔥🔥 NEW SECURITY CONFIG LOADED 🔥🔥🔥");
 
 //        it will check during login wuth username and password with the help of DaoAuthenticationProvider
         http.authenticationProvider(authenticationProvider());
