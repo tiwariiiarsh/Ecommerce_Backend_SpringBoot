@@ -87,7 +87,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/test/**").permitAll()
                         .anyRequest().authenticated()
                 );
-        System.out.println("🔥🔥🔥 NEW SECURITY CONFIG LOADED 🔥🔥🔥");
+
 
 //        it will check during login wuth username and password with the help of DaoAuthenticationProvider
         http.authenticationProvider(authenticationProvider());
@@ -144,6 +144,7 @@ public class WebSecurityConfig {
     @Bean
     public CommandLineRunner initData(RoleRepository roleRepository, UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return args -> {
+            System.out.println("🔥🔥🔥 NEW SECURITY CONFIG LOADED 🔥🔥🔥");
             // Retrieve or create roles
             Role userRole = roleRepository.findByRoleName(AppRole.ROLE_USER)
                     .orElseGet(() -> {
