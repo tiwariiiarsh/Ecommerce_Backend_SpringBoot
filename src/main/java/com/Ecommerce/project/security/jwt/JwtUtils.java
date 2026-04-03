@@ -31,6 +31,9 @@ public class JwtUtils {
     @Value("${spring.ecom.app.jwtCookieName}")
     private String  jwtCookie;
 
+    @Value("${app.secure-cookie:false}")
+    private boolean secureCookie;
+
     //   "HttpServletRequest ek interface hai jo client ke HTTP request ko represent karta hai. Iske through hum request
 //   headers, parameters, method (GET/POST), body, cookies aur client-related information access kar sakte hain. Ye basically client aur server ke beech bridge ka kaam karta hai."
 
@@ -77,8 +80,8 @@ public class JwtUtils {
 //                .httpOnly(false)
 //                .secure(false)
                 .httpOnly(true)                // SECURITY
-                .secure(true)                  // 🔥 MUST for HTTPS
-                .sameSite("None")              // 🔥 MUST for deployed env
+                .secure(secureCookie)                      // ← hardcoded true tha, ab env se aayega
+                .sameSite(secureCookie ? "None" : "Lax")   // ← hardcoded "None" tha, ab env se aayega
                 .build();
         return  cookie;
     }

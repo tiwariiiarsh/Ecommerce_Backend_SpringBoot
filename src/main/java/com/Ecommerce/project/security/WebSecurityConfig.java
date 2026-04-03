@@ -45,18 +45,21 @@ public class WebSecurityConfig {
     @Autowired
     private AuthEntryPointJwt unauthorizeHandler;
 
-//    @Value("${frontend.url}")
-//    private String frontEndUrl;
+    @Value("${frontend.url}")
+    private String frontEndUrl;
 
     // CORS Fix v2
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
+
         config.setAllowedOrigins(List.of(
                 "http://localhost:5173",
-                "http://localhost:3000"
+                "http://localhost:3000",
+                frontEndUrl                  // ← add this
         ));
+
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
