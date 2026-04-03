@@ -33,7 +33,9 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**") // 👈 sirf API ke liye CORS allow
-                .allowedOrigins(frontEndUrl) // ab properties se load hoga
+                .allowedOrigins("http://localhost:5173",
+                        "http://localhost:3000",
+                        frontEndUrl) // ab properties se load hoga
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                  .allowCredentials(true);
