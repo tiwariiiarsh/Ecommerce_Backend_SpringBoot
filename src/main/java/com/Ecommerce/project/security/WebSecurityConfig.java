@@ -48,6 +48,8 @@ public class WebSecurityConfig {
     @Value("${frontend.url}")
     private String frontEndUrl;
 
+    // CORS Fix v2
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
