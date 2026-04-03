@@ -10,6 +10,7 @@ import com.Ecommerce.project.security.jwt.AuthEntryPointJwt;
 import com.Ecommerce.project.security.jwt.AuthTokenFilter;
 import com.Ecommerce.project.security.services.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,7 +27,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.List;
 import java.util.Set;
 
 @Configuration
@@ -40,10 +45,32 @@ public class WebSecurityConfig {
     @Autowired
     private AuthEntryPointJwt unauthorizeHandler;
 
+    @Value("${frontend.url}")
+    private String frontEndUrl;
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of(
+                "http://localhost:5173",
+                "http://localhost:3000",
+                frontEndUrl
+        ));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+
     @Bean
     public  AuthTokenFilter authenticationJwtTokenFilter(){
         return new AuthTokenFilter();
     }
+
+
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
@@ -66,7 +93,7 @@ public class WebSecurityConfig {
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
-                .cors(cors -> {}) // CORS ko enable kar diya
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))// CORS ko enable kar diya
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizeHandler))
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
