@@ -50,10 +50,11 @@ public class WebSecurityConfig {
 
     // CORS Fix v2
 
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-
+        System.out.println("FRONTEND URL: " + frontEndUrl);
         config.setAllowedOrigins(List.of(
                 "http://localhost:5173",
                 "http://localhost:3000",
