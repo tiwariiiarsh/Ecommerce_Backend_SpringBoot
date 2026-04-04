@@ -80,8 +80,8 @@ public class JwtUtils {
 //                .httpOnly(false)
 //                .secure(false)
                 .httpOnly(true)                // SECURITY
-                .secure(secureCookie)                      // ← hardcoded true tha, ab env se aayega
-                .sameSite(secureCookie ? "None" : "Lax")   // ← hardcoded "None" tha, ab env se aayega
+                .secure(true)                  // 🔥 MUST for HTTPS
+                .sameSite("None")              // 🔥 MUST for deployed env
                 .build();
         return  cookie;
     }
