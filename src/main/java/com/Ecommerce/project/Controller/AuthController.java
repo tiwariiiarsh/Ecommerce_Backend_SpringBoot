@@ -37,7 +37,6 @@ public class AuthController {
        AuthenticationResult result = authService.login(loginRequest);
 
 
-
 //        incase of token formate
 //        return ResponseEntity.ok(response);
 

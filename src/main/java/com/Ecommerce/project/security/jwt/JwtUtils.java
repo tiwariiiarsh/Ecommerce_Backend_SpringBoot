@@ -49,7 +49,7 @@ public class JwtUtils {
 //    }
 //----------------------------<<<<  getJWT  >>>>>>>>>>-------------------------------
 //    ---------------------JWT COOKIE FORMATE----------------------------------
-//    cookie is just used for storage purpose: it store the jwt in the cooki
+//    cookie is just used for storage purpose: it stores the jwt in the cookie
 //    other than cookie we have two more storage formate:  1))Browser Web App → ✅ Cookie-based JWT,  2)) React / Mobile App → ✅ Header + LocalStorage , 3) Microservices → ❌ Session
 //Browser se cookie read karke JWT return karta hai. Filter/Interceptor me call hota hai.
     public String getJwtFromCookies(HttpServletRequest request){
