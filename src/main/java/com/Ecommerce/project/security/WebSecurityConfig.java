@@ -108,6 +108,9 @@ public class WebSecurityConfig {
                 .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // CHANGED: controller me koi error aaye (400/500) toh Spring /error pe forward karta hai.
+                        // /error protected tha, isliye asli error ki jagah 401 aa raha tha.
+                        .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/order/**").permitAll()
                         .requestMatchers("/api/public/**").permitAll()
@@ -144,7 +147,7 @@ public class WebSecurityConfig {
 //👉 In saare configurations ko final form me convert karke ek SecurityFilterChain object banana.
 //        Aur ye SecurityFilterChain hi woh cheez hai jisko Spring Security use karta hai har request ko check karne ke liye.
 
-//Ye kuch endpoints ko completely ignore karta hai (Swagger docs etc.). from authenti...
+    //Ye kuch endpoints ko completely ignore karta hai (Swagger docs etc.). from authenti...
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer(){
         return (web -> web.ignoring().requestMatchers(
@@ -168,7 +171,7 @@ public class WebSecurityConfig {
     }
 
 
-//    this is in doubt full why and how it is used check during revision
+    //    this is in doubt full why and how it is used check during revision
 //    🔹 Why CommandLineRunner is used?
 //    CommandLineRunner ek Spring Boot interface hai jo app start hote hi ek baar run hota hai.
 //    Iska use initial setup ya dummy/test data insert karne ke liye hota hai.

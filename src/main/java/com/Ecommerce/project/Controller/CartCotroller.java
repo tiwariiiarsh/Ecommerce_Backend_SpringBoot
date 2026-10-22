@@ -1,6 +1,7 @@
 package com.Ecommerce.project.Controller;
 
 import com.Ecommerce.project.Utils.AuthUtils;
+import com.Ecommerce.project.exceptions.ApiException;
 import com.Ecommerce.project.model.Cart;
 import com.Ecommerce.project.model.CartItem;
 import com.Ecommerce.project.payload.CartDTO;
@@ -31,14 +32,14 @@ public class CartCotroller {
 
     @PostMapping("/carts/create")
     public ResponseEntity<String> createOrUpdateCart(@RequestBody  List<CartItemDTO> cartItems){
-      String response = cartService.createOrUpdateCartWithItems(cartItems);
+        String response = cartService.createOrUpdateCartWithItems(cartItems);
         return new ResponseEntity<String>(response, HttpStatus.CREATED);
     }
 
 
     @PostMapping("/carts/products/{productId}/quantity/{quantity}")
     public ResponseEntity<CartDTO> addProductToCart( @PathVariable Long productId,
-                                                   @PathVariable Integer quantity){
+                                                     @PathVariable Integer quantity){
         CartDTO cartDTO = cartService.addProductToCart(productId,quantity);
         return new ResponseEntity<CartDTO>(cartDTO, HttpStatus.CREATED);
     }
@@ -52,6 +53,10 @@ public class CartCotroller {
     public ResponseEntity<CartDTO>getCardById(){
         String emailId = authUtils.loggedInEmail();
         Cart cart =cartRepository.findCartByEmail(emailId);
+        // CHANGED: agar user ka cart abhi bana hi nahi, toh NullPointerException ki jagah clear error aayega
+        if (cart == null) {
+            throw new ApiException("Cart not found for this user");
+        }
         Long cartId = cart.getCartId();
         CartDTO cartDTO = cartService.getCart(emailId,cartId);//email aur cartId dono isiliye use kr rhe  jisse kl ko agr scalable bnana h user has two cart with same email
         return new ResponseEntity<CartDTO>(cartDTO,HttpStatus.OK) ;

@@ -21,4 +21,5 @@ public class AnalyticsController {
         AnalyticsResponse response = analyticsService.getAnalyticsData();
         return new ResponseEntity<AnalyticsResponse>(response, HttpStatus.OK);
     }
+
 }

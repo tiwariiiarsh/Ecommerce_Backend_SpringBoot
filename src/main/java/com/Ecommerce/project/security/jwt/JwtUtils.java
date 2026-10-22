@@ -25,19 +25,21 @@ public class JwtUtils {
     @Value("${spring.app.jwtSecret}")
     private String jwtSecret;
 
+    // CHANGED: int -> long (bade expiry value pe overflow na ho)
     @Value("${spring.app.jwtExpirationMs}")
-    private int jwtExpirationMs;
+    private long jwtExpirationMs;
 
     @Value("${spring.ecom.app.jwtCookieName}")
     private String  jwtCookie;
 
+    // localhost pe false, production (https) pe true -> env var APP_SECURE_COOKIE=true
     @Value("${app.secure-cookie:false}")
     private boolean secureCookie;
 
     //   "HttpServletRequest ek interface hai jo client ke HTTP request ko represent karta hai. Iske through hum request
 //   headers, parameters, method (GET/POST), body, cookies aur client-related information access kar sakte hain. Ye basically client aur server ke beech bridge ka kaam karta hai."
 
-//    -------------------- GET JWT TOKEN FROM HEADER  FORMATE---------------------------------
+    //    -------------------- GET JWT TOKEN FROM HEADER  FORMATE---------------------------------
 //    in jwt token time --> jwt token will be passed to us in the form of header
 //    public String getJwtFromHeader(HttpServletRequest request) {
 //        String bearerToken = request.getHeader("Authorization");
@@ -63,6 +65,7 @@ public class JwtUtils {
     }
 
 
+
 //    .httpOnly(false)
 //    HTTP-only flag define karta hai.
 //false → JS code se access ho sakta hai (document.cookie)
@@ -70,26 +73,45 @@ public class JwtUtils {
 //    Usually JWT ke liye security reason se true recommended hota hai.
 
 //JWT generate karke response cookie create karta hai. Login ke time call hota hai.
-    public ResponseCookie generateJwtCookie(UserDetailsImpl userPrincipal){
-        String jwt = generateTokenFromUsername(userPrincipal.getUsername());
-        ResponseCookie cookie = ResponseCookie.from(jwtCookie,jwt) //builder func h
-//                .path("/api")
-                .path("/")   // NOT /api
 
-                .maxAge(24*60*60)
-//                .httpOnly(false)
-//                .secure(false)
-                .httpOnly(true)                // SECURITY
-                .secure(true)                  // 🔥 MUST for HTTPS
-                .sameSite("None")              // 🔥 MUST for deployed env
+    // This one is for localhost testing, in production we should set secure to true and sameSite to "None" for cross-site requests.
+// CHANGED: ab ye ek hi method dono case handle karta hai (secureCookie flag se):
+//   localhost  -> secure(false) + sameSite("Lax")
+//   production -> secure(true)  + sameSite("None")  (cross-site requests ke liye)
+    public ResponseCookie generateJwtCookie(UserDetailsImpl userPrincipal) {
+        String jwt = generateTokenFromUsername(userPrincipal.getUsername());
+
+        return ResponseCookie.from(jwtCookie, jwt)
+                .path("/")
+                .maxAge(24 * 60 * 60)
+                .httpOnly(true)
+                .secure(secureCookie)
+                .sameSite(secureCookie ? "None" : "Lax")
                 .build();
-        return  cookie;
     }
 
+// this is for aws cloud deployment, in production we should set secure to true and sameSite to "None" for cross-site requests.
+// public ResponseCookie generateJwtCookie(UserDetailsImpl userPrincipal) {
+//     String jwt = generateTokenFromUsername(userPrincipal.getUsername());
 
+//     return ResponseCookie.from(jwtCookie, jwt)
+//             .path("/")
+//             .maxAge(24 * 60 * 60)
+//             .httpOnly(true)
+//             .secure(true)
+//             .sameSite("None")
+//             .build();
+// }
+
+    // CHANGED: logout cookie ka path/flags ab login cookie se match karte hain,
+    // warna browser cookie delete nahi karta.
     public ResponseCookie getCleanCookie(){
-        ResponseCookie cookie = ResponseCookie.from(jwtCookie,null) //builder func h
-                .path("/api")
+        ResponseCookie cookie = ResponseCookie.from(jwtCookie,"") //builder func h
+                .path("/")
+                .maxAge(0)
+                .httpOnly(true)
+                .secure(secureCookie)
+                .sameSite(secureCookie ? "None" : "Lax")
                 .build();
         return  cookie;
     }
@@ -139,7 +161,6 @@ public class JwtUtils {
 
     public boolean validateJwtToken(String authToken) {
         try {
-            System.out.println("Validate");
             Jwts.parser()
                     .verifyWith((SecretKey) key())   // secret key se token verify karega
                     .build()
@@ -151,6 +172,9 @@ public class JwtUtils {
             logger.error("❌JWT token is expired: {}", e.getMessage());
         } catch (UnsupportedJwtException e) {
             logger.error("❌JWT token is unsupported: {}", e.getMessage());
+        } catch (JwtException e) {
+            // CHANGED: signature galat ho ya koi aur JWT error ho toh bhi yaha pakda jayega
+            logger.error("❌JWT validation failed: {}", e.getMessage());
         } catch (IllegalArgumentException e) {
             logger.error("❌JWT claims string is empty: {}", e.getMessage());
         }

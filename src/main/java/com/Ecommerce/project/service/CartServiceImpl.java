@@ -44,6 +44,8 @@ public class CartServiceImpl implements CartService {
     @Autowired
     AuthUtils authUtils;
 
+    // CHANGED: @Transactional add kiya taaki lazy cartItems load ho sake (session open rahe)
+    @Transactional
     @Override
     public CartDTO addProductToCart(Long productId, Integer quantity) {
 //        find existing cart or create one
@@ -68,13 +70,16 @@ public class CartServiceImpl implements CartService {
             throw  new ApiException("Please, make an order of the"+product.getProductName()+"less than or equal to quantity"+product.getQuantity()+".");
         }
 
+        // CHANGED: specialPrice null ho toh normal price use karo (NullPointerException se bachne ke liye)
+        Double itemPrice = product.getSpecialPrice() != null ? product.getSpecialPrice() : product.getPrice();
+
 //        create cart item
         CartItem newCartItem = new CartItem();
         newCartItem.setProduct(product);
         newCartItem.setCart(cart);
         newCartItem.setQuantity(quantity);
         newCartItem.setDiscount(product.getDiscount());
-        newCartItem.setProductPrice(product.getSpecialPrice());
+        newCartItem.setProductPrice(itemPrice);
 
 //        save cartItem
         cartItemRepository.save(newCartItem);
@@ -82,7 +87,7 @@ public class CartServiceImpl implements CartService {
 //      product is added to cartItem then productQuantity is same we will reduce it if payment is done
         product.setQuantity(product.getQuantity());
 
-        cart.setTotalPrice(cart.getTotalPrice() + (product.getSpecialPrice()*quantity));
+        cart.setTotalPrice(cart.getTotalPrice() + (itemPrice*quantity));
         cartRepository.save(cart);
 //        return the updated cart
         CartDTO cartDTO = modelMapper.map(cart,CartDTO.class);
@@ -99,6 +104,8 @@ public class CartServiceImpl implements CartService {
 
     }
 
+    // CHANGED: @Transactional add kiya (same lazy loading problem yaha bhi aati)
+    @Transactional
     @Override
     public List<CartDTO> getAllCarts() {
         List<Cart> carts = cartRepository.findAll();
@@ -126,6 +133,8 @@ public class CartServiceImpl implements CartService {
         return cartDTOs;
     }
 
+    // CHANGED: @Transactional add kiya -> yahi LazyInitializationException (500 error) ka main fix hai
+    @Transactional
     @Override
     public CartDTO getCart(String emailId, Long cartId) {
         Cart cart = cartRepository.findCartByEmailAndCartId(emailId,cartId);
@@ -133,9 +142,15 @@ public class CartServiceImpl implements CartService {
             throw new ResourceNotFoundException("Cart","CartId",cartId);
         }
         CartDTO cartDTO = modelMapper.map(cart,CartDTO.class);
-        cart.getCartItems().forEach(c -> c.getProduct().setQuantity(c.getQuantity()));
+        // CHANGED: purani line DB ke Product entity ki quantity badal deti thi (@Transactional me ye
+        // DB me save ho jata -> product ka stock cart ki quantity se overwrite ho jata). Ab sirf DTO me quantity set hoti hai.
+//        cart.getCartItems().forEach(c -> c.getProduct().setQuantity(c.getQuantity()));
         List<ProductDTO> products = cart.getCartItems().stream()
-                .map(p -> modelMapper.map(p.getProduct(),ProductDTO.class))
+                .map(item -> {
+                    ProductDTO productDTO = modelMapper.map(item.getProduct(),ProductDTO.class);
+                    productDTO.setQuantity(item.getQuantity());
+                    return productDTO;
+                })
                 .collect(Collectors.toList());
         cartDTO.setProducts(products);
         return cartDTO;
@@ -292,7 +307,8 @@ public class CartServiceImpl implements CartService {
             cartItem.setProduct(product);
             cartItem.setCart(existingCart);
             cartItem.setQuantity(quantity);
-            cartItem.setProductPrice(product.getSpecialPrice());
+            // CHANGED: product.getSpecialPrice() null ho sakta tha, isliye upar nikala hua specialPrice use kiya
+            cartItem.setProductPrice(specialPrice);
             cartItem.setDiscount(product.getDiscount());
             cartItemRepository.save(cartItem);
         }

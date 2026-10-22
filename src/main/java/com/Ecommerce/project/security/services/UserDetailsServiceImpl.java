@@ -22,7 +22,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 ////        fetching user as model from database but spring security required it as userDetails
 //        User user = userRepository.findByUserName(username)
 //                .orElseThrow(() -> new UsernameNotFoundException("user not found with username:  " +username));
-////here we are storing  them from user to userDetails object
+    ////here we are storing  them from user to userDetails object
 //        return UserDetailsImpl.build(user);
 //    }
 
@@ -36,11 +36,11 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         User user = userRepository.findByUserName(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
 
-        System.out.println("🔥 Found user in DB: " + user.getUserName() + " | Password: " + user.getPassword());
+        // CHANGED: password hash print karna hata diya (security risk), sirf username print hota hai
+        System.out.println("🔥 Found user in DB: " + user.getUserName());
 
         // Ensure userDetails object returns encoded password from DB
         UserDetailsImpl userDetails = UserDetailsImpl.build(user);
-        System.out.println("🔥 UserDetails password: " + userDetails.getPassword());
 
         return userDetails;
     }
